@@ -1,71 +1,124 @@
 <template>
-  <div class="container py-5" v-if="product">
-    <nav aria-label="breadcrumb" class="mb-4">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item">
-          <router-link to="/wardrobe" class="text-dark">Wardrobe</router-link>
-        </li>
-        <li class="breadcrumb-item active">{{ product.name }}</li>
-      </ol>
-    </nav>
-    <div class="row gx-5">
-      <div class="col-12 col-md-6 mb-4 mb-md-0">
-        <img :src="product.image" class="img-fluid rounded shadow-sm w-100" :alt="product.name" />
+  <div class="container py-5">
+    <div v-if="cloth" class="row align-items-center">
+      <!-- Breadcrumb -->
+      <div class="col-12 mb-4">
+        <nav aria-label="breadcrumb">
+          <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+              <router-link :to="isFromWardrobe ? '/wardrobe' : '/finder'" class="text-decoration-none text-muted">
+                {{ isFromWardrobe ? 'Wardrobe' : 'Finder' }}
+              </router-link>
+            </li>
+            <li class="breadcrumb-item active text-dark" aria-current="page">{{ cloth.name }}</li>
+          </ol>
+        </nav>
       </div>
-      <div class="col-12 col-md-6 d-flex flex-column justify-content-center">
-        <h4 class="text-uppercase text-muted mb-1">{{ product.brand }}</h4>
-        <h1 class="fw-bold mb-3">{{ product.name }}</h1>
-        <p class="fs-2 mb-4">€{{ product.price }}</p>
-        <p class="text-secondary mb-4">{{ product.description }}</p>
-        <ul class="list-group list-group-flush mb-5">
-          <li class="list-group-item px-0"><strong>Categoria:</strong> {{ product.category }}</li>
-          <li class="list-group-item px-0"><strong>Colore:</strong> {{ product.color }}</li>
-          <li class="list-group-item px-0"><strong>Stile:</strong> {{ product.style }}</li>
-          <li class="list-group-item px-0 d-flex align-items-center gap-2">
-            <strong>Taglie disponibili:</strong>
-            <span v-for="size in product.sizes" :key="size" class="badge border border-dark text-dark px-3 py-2">
-              {{ size }}
+
+      <!-- Immagine Capo -->
+      <div class="col-12 col-md-6 text-center mb-4 mb-md-0">
+        <img 
+          :src="cloth.image" 
+          :alt="cloth.name" 
+          class="img-fluid rounded shadow-sm p-4" 
+          style="max-height: 480px; object-fit: contain; background-color: #f8f9fa;"
+        >
+      </div>
+
+      <!-- Informazioni e Azioni -->
+      <div class="col-12 col-md-6 ps-md-5">
+        <span class="text-uppercase text-muted fw-bold small">MASHIONLAB</span>
+        <h1 class="display-5 fw-bold mb-2">{{ cloth.name }}</h1>
+
+        <!-- Mostra prezzo solo se non proviene dal guardaroba -->
+        <p v-if="!isFromWardrobe" class="display-6 fw-semibold mb-3">€{{ cloth.price }}</p>
+        <div v-else class="mb-3">
+          <span class="badge bg-dark fs-6 px-3 py-2">Capo presente nel tuo armadio</span>
+        </div>
+
+        <p class="lead text-muted mb-4">{{ cloth.description }}</p>
+
+        <ul class="list-group list-group-flush mb-4">
+          <li class="list-group-item px-0 d-flex justify-content-between">
+            <span class="text-muted">Categoria</span>
+            <strong>{{ cloth.category }}</strong>
+          </li>
+          <li class="list-group-item px-0 d-flex justify-content-between">
+            <span class="text-muted">Stile</span>
+            <strong>{{ cloth.style }}</strong>
+          </li>
+          
+          <!-- Taglia Singola -->
+          <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+            <span class="text-muted">{{ isFromWardrobe ? 'La tua taglia' : 'Taglia disponibile' }}</span>
+            <span class="badge border border-dark text-dark px-3 py-2 fs-6">
+              {{ cloth.size || (cloth.sizes && cloth.sizes[0]) || 'M' }}
             </span>
           </li>
         </ul>
-        <div class="d-flex gap-3">
-          <button @click="handleAddToCart" class="btn btn-dark btn-lg flex-grow-1">
+
+        <!-- Azioni differenziate -->
+        <div v-if="!isFromWardrobe" class="d-flex gap-3">
+          <button class="btn btn-dark btn-lg flex-grow-1" @click="handleAddToCart">
             Aggiungi al carrello
           </button>
-          <button @click="handleAddToWishlist" class="btn btn-outline-danger btn-lg px-4">
+          <button class="btn btn-outline-danger btn-lg px-4" @click="handleAddToWishlist">
             Salva
           </button>
         </div>
+        <div v-else class="d-flex gap-3">
+          <router-link to="/outfits" class="btn btn-dark btn-lg flex-grow-1">
+            Vedi Outfit abbinati
+          </router-link>
+          <router-link to="/wardrobe" class="btn btn-outline-secondary btn-lg">
+            Torna all'armadio
+          </router-link>
+        </div>
       </div>
     </div>
-  </div>
-  <div v-else class="container py-5 text-center">
-    <h2 class="mb-4">Capo non trovato</h2>
-    <router-link to="/wardrobe" class="btn btn-dark">Torna al guardaroba</router-link>
+
+    <!-- Fallback capo inesistente -->
+    <div v-else class="text-center py-5">
+      <h2 class="fw-bold mb-3">Capo non trovato</h2>
+      <router-link to="/wardrobe" class="btn btn-dark">Torna al guardaroba</router-link>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useMashionLabStore } from '../stores/mashionLab'
 
 const props = defineProps({
-  id: { type: String, required: true }
+  id: {
+    type: [String, Number],
+    required: true
+  }
 })
 
+const route = useRoute()
 const store = useMashionLabStore()
 
-const product = computed(() => {
-  return store.clothes.find(item => item.id === Number(props.id))
+const cloth = computed(() => {
+  return store.clothes.find(c => c.id === parseInt(props.id))
+})
+
+const isFromWardrobe = computed(() => {
+  return route.query.from === 'wardrobe' || (cloth.value && cloth.value.owned)
 })
 
 const handleAddToCart = () => {
-  store.addToCart(product.value)
-  alert('Prodotto aggiunto al carrello')
+  if (cloth.value) {
+    store.addToCart(cloth.value)
+    alert(`${cloth.value.name} aggiunto al carrello!`)
+  }
 }
 
 const handleAddToWishlist = () => {
-  store.addToWishlist(product.value)
-  alert('Prodotto aggiunto alla wishlist')
+  if (cloth.value) {
+    store.addToWishlist(cloth.value)
+    alert(`${cloth.value.name} aggiunto alla wishlist!`)
+  }
 }
 </script>

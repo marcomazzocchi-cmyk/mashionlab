@@ -1,6 +1,7 @@
 <template>
   <div class="container py-5">
     <h1 class="fw-bold mb-4">My Wardrobe</h1>
+    
     <div class="row mb-4">
       <div class="col-12 col-md-4">
         <label for="categoryFilter" class="form-label text-muted">Filtra per categoria</label>
@@ -14,13 +15,14 @@
       </div>
     </div>
 
-    <!-- 1 colonna su smartphone, 2 su tablet, 3 su desktop -->
+    <!-- Griglia Responsive -->
     <div class="row g-4">
       <div class="col-12 col-md-6 col-lg-4" v-for="item in filteredClothes" :key="item.id">
-        <ProductCard :product="item" @add-to-wishlist="handleAddToWishlist" />
+        <ProductCard :product="item" :is-wardrobe="true" />
       </div>
+      
       <div v-if="filteredClothes.length === 0" class="col-12 text-center py-5 text-muted">
-        <h3>Nessun capo trovato per questa categoria.</h3>
+        <h3>Nessun capo trovato nel tuo armadio per questa categoria.</h3>
       </div>
     </div>
   </div>
@@ -35,14 +37,12 @@ const store = useMashionLabStore()
 const selectedCategory = ref('')
 
 const filteredClothes = computed(() => {
+  // Prende solo i capi posseduti
+  const myClothes = store.clothes.filter(item => item.owned)
+  
   if (selectedCategory.value === '') {
-    return store.clothes
+    return myClothes
   }
-  return store.clothes.filter(item => item.category === selectedCategory.value)
+  return myClothes.filter(item => item.category === selectedCategory.value)
 })
-
-const handleAddToWishlist = (product) => {
-  store.addToWishlist(product)
-  alert(`${product.name} aggiunto alla wishlist`)
-}
 </script>

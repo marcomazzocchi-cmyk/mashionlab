@@ -1,24 +1,26 @@
 <template>
   <div class="container py-5">
-    <div class="text-center mb-5">
-      <h1 class="fw-bold display-5">Fashion Finder</h1>
-      <p class="text-muted">Trova quello che cerchi per il tuo stile e il tuo budget.</p>
+    <div class="mb-4">
+      <h1 class="fw-bold">Finder Catalogo</h1>
+      <p class="text-muted">Scopri nuovi capi da aggiungere alla tua collezione</p>
     </div>
-    <div class="row">
-      <aside class="col-12 col-lg-3 mb-4 mb-lg-0">
-        <FilterBar @update-filters="applyFilters" />
-      </aside>
-      <section class="col-12 col-lg-9">
-        <div class="row g-4">
-          <div class="col-12 col-md-6 col-xl-4" v-for="item in filteredProducts" :key="item.id">
-            <ProductCard :product="item" @add-to-wishlist="handleAddToWishlist" />
-          </div>
-          <div v-if="filteredProducts.length === 0" class="col-12 text-center py-5">
-            <h4 class="text-muted">Nessun prodotto trovato con questi filtri.</h4>
-            <p>Prova ad ampliare la ricerca.</p>
-          </div>
-        </div>
-      </section>
+
+    <!-- Barra filtri -->
+    <FilterBar @update-filters="applyFilters" class="mb-5" />
+
+    <!-- Risultati catalogo -->
+    <div class="row g-4">
+      <div class="col-12 col-md-6 col-lg-4" v-for="item in filteredCatalog" :key="item.id">
+        <ProductCard 
+          :product="item" 
+          :is-wardrobe="false"
+          @add-to-wishlist="handleAddToWishlist" 
+        />
+      </div>
+
+      <div v-if="filteredCatalog.length === 0" class="col-12 text-center py-5 text-muted">
+        <h3>Nessun capo a catalogo corrisponde ai filtri selezionati.</h3>
+      </div>
     </div>
   </div>
 </template>
@@ -26,27 +28,41 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useMashionLabStore } from '../stores/mashionLab'
-import FilterBar from '../components/FilterBar.vue'
 import ProductCard from '../components/ProductCard.vue'
+import FilterBar from '../components/FilterBar.vue'
 
 const store = useMashionLabStore()
-const activeFilters = ref({ search: '', category: '', maxPrice: 500 })
+
+const currentFilters = ref({
+  search: '',
+  category: '',
+  maxPrice: Infinity
+})
 
 const applyFilters = (newFilters) => {
-  activeFilters.value = newFilters
+  currentFilters.value = newFilters
 }
 
-const filteredProducts = computed(() => {
+const filteredCatalog = computed(() => {
   return store.clothes.filter(item => {
-    const matchSearch = item.name.toLowerCase().includes(activeFilters.value.search.toLowerCase())
-    const matchCategory = activeFilters.value.category === '' || item.category === activeFilters.value.category
-    const matchPrice = item.price <= activeFilters.value.maxPrice
-    return matchSearch && matchCategory && matchPrice
+    // 1. Solo capi da acquistare
+    const isCatalog = !item.owned
+    
+    // 2. Filtro ricerca testo
+    const matchesSearch = item.name.toLowerCase().includes(currentFilters.value.search.toLowerCase())
+    
+    // 3. Filtro categoria
+    const matchesCategory = currentFilters.value.category === '' || item.category === currentFilters.value.category
+    
+    // 4. Filtro prezzo massimo
+    const matchesPrice = item.price <= (currentFilters.value.maxPrice || Infinity)
+
+    return isCatalog && matchesSearch && matchesCategory && matchesPrice
   })
 })
 
 const handleAddToWishlist = (product) => {
   store.addToWishlist(product)
-  alert(`${product.name} aggiunto alla wishlist`)
+  alert(`${product.name} aggiunto alla wishlist!`)
 }
 </script>
