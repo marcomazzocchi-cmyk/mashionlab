@@ -2,7 +2,7 @@
   <div class="container py-5">
     <div class="text-center mb-5">
       <h1 class="fw-bold display-5">Inspire Your Style</h1>
-      <p class="text-muted">Scopri le combinazioni e i look consigliati.</p>
+      <p class="text-muted">Esplora le combinazioni e trova il tuo prossimo look.</p>
     </div>
 
     <div class="row justify-content-center mb-5">
