@@ -9,7 +9,7 @@
         v-model="filters.search" 
         @input="sendFilters" 
         class="form-control border-dark" 
-        placeholder="Es. Blazer" 
+        placeholder="Cerca per nome capo..." 
       />
     </div>
 
