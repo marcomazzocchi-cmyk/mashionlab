@@ -1,6 +1,7 @@
 <template>
   <div class="container py-5">
     <h1 class="fw-bold mb-4">My Wardrobe</h1>
+    <p class="text-muted">Esplora e organizza i capi del tuo armadio</p>
     <div class="row mb-4">
       <div class="col-12 col-md-4">
         <label for="categoryFilter" class="form-label text-muted">Filtra per categoria</label>
